@@ -108,7 +108,7 @@
   </div>
 
   <!-- Sync Button -->
-  <div class="p-4 border-t border-loopt-border">
+  <div class="p-4 border-t border-loopt-border space-y-2">
     <button 
       class="btn-secondary w-full justify-center"
       onclick={() => contentStore.syncWithServer()}
@@ -124,5 +124,21 @@
       </svg>
       {syncing ? 'Syncing...' : 'Sync Now'}
     </button>
+
+    <!-- Mobile App Preview Button -->
+    <a 
+      href="https://loopt.shooflyai.com"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white rounded-lg font-medium transition-all duration-200 shadow-lg shadow-purple-500/20"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+      </svg>
+      Open Mobile App
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+      </svg>
+    </a>
   </div>
 </aside>
