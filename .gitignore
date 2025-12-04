@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+build/
+dist/
+.svelte-kit/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Tauri build
+src-tauri/target/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test coverage
+coverage/

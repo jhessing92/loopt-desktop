@@ -1,0 +1,151 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-loopt-border;
+  }
+  
+  body {
+    @apply bg-loopt-bg text-loopt-text antialiased;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-loopt-bg;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-loopt-surface-hover rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-loopt-border;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-4 py-2 bg-loopt-accent hover:bg-loopt-accent-hover text-white rounded-lg font-medium transition-all duration-200 flex items-center gap-2;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 bg-loopt-surface hover:bg-loopt-surface-hover text-loopt-text rounded-lg font-medium transition-all duration-200 border border-loopt-border flex items-center gap-2;
+  }
+
+  .btn-danger {
+    @apply px-4 py-2 bg-loopt-error/20 hover:bg-loopt-error/30 text-loopt-error rounded-lg font-medium transition-all duration-200 flex items-center gap-2;
+  }
+
+  .btn-success {
+    @apply px-4 py-2 bg-loopt-success/20 hover:bg-loopt-success/30 text-loopt-success rounded-lg font-medium transition-all duration-200 flex items-center gap-2;
+  }
+
+  .card {
+    @apply bg-loopt-surface rounded-xl border border-loopt-border p-4;
+  }
+
+  .input {
+    @apply w-full px-4 py-2.5 bg-loopt-bg border border-loopt-border rounded-lg text-loopt-text placeholder-loopt-text-muted focus:outline-none focus:ring-2 focus:ring-loopt-accent focus:border-transparent transition-all duration-200;
+  }
+
+  .select {
+    @apply w-full px-4 py-2.5 bg-loopt-bg border border-loopt-border rounded-lg text-loopt-text focus:outline-none focus:ring-2 focus:ring-loopt-accent focus:border-transparent transition-all duration-200 appearance-none cursor-pointer;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-loopt-text-muted mb-1.5;
+  }
+
+  .textarea {
+    @apply w-full px-4 py-3 bg-loopt-bg border border-loopt-border rounded-lg text-loopt-text placeholder-loopt-text-muted focus:outline-none focus:ring-2 focus:ring-loopt-accent focus:border-transparent transition-all duration-200 resize-none;
+  }
+
+  .status-badge {
+    @apply px-2.5 py-1 rounded-full text-xs font-medium uppercase tracking-wide;
+  }
+
+  .status-draft {
+    @apply bg-loopt-text-muted/20 text-loopt-text-muted;
+  }
+
+  .status-pending {
+    @apply bg-loopt-pending/20 text-loopt-pending;
+  }
+
+  .status-approved {
+    @apply bg-loopt-success/20 text-loopt-success;
+  }
+
+  .status-rejected {
+    @apply bg-loopt-error/20 text-loopt-error;
+  }
+
+  .sidebar-item {
+    @apply flex items-center gap-3 px-4 py-3 rounded-lg text-loopt-text-muted hover:bg-loopt-surface-hover hover:text-loopt-text transition-all duration-200 cursor-pointer;
+  }
+
+  .sidebar-item.active {
+    @apply bg-loopt-accent/20 text-loopt-accent;
+  }
+}
+
+/* Calendar day hover effect */
+.calendar-day {
+  @apply relative cursor-pointer transition-all duration-200;
+}
+
+.calendar-day:hover {
+  @apply bg-loopt-surface-hover;
+}
+
+.calendar-day.today {
+  @apply ring-2 ring-loopt-accent ring-inset;
+}
+
+.calendar-day.selected {
+  @apply bg-loopt-accent/20;
+}
+
+/* Drag and drop styling */
+.drop-zone {
+  @apply border-2 border-dashed border-loopt-border rounded-xl p-8 text-center transition-all duration-200;
+}
+
+.drop-zone.active {
+  @apply border-loopt-accent bg-loopt-accent/10;
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+  @apply fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center;
+}
+
+/* Tooltip */
+.tooltip {
+  @apply absolute z-50 px-2 py-1 text-xs bg-loopt-surface rounded shadow-lg border border-loopt-border;
+}
+
+/* Platform colors */
+.platform-linkedin {
+  @apply bg-[#0077b5]/20 text-[#0077b5];
+}
+
+.platform-facebook {
+  @apply bg-[#1877f2]/20 text-[#1877f2];
+}
+
+.platform-instagram {
+  @apply bg-[#e4405f]/20 text-[#e4405f];
+}
+
+.platform-twitter {
+  @apply bg-[#1da1f2]/20 text-[#1da1f2];
+}
+

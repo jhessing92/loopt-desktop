@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Loopt Desktop",
+  "version": "1.0.0",
+  "identifier": "com.shooflyai.loopt-desktop",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Loopt Desktop - Content Manager",
+        "width": 1400,
+        "height": 900,
+        "minWidth": 1024,
+        "minHeight": 700,
+        "center": true,
+        "decorations": true,
+        "resizable": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "shortDescription": "Desktop content management for Loopt",
+    "longDescription": "Create, edit, and manage social media content for approval through the Loopt mobile app."
+  }
+}
