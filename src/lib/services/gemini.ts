@@ -145,16 +145,13 @@ export async function uploadTrainingImage(
   type: TrainingImageType,
   tags: string[] = []
 ): Promise<TrainingImage> {
-  if (!supabase) throw new Error('Supabase not configured');
+  const storageClient = getStorageClient();
+  if (!storageClient) throw new Error('Storage client not configured');
 
   const fileExt = file.name.split('.').pop();
   const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
   const folder = type === 'personal' ? 'personal-photos' : 'brand-assets';
   const filePath = `training-images/${folder}/${fileName}`;
-
-  // Upload to Supabase storage using admin client (bypasses RLS)
-  const storageClient = getStorageClient();
-  if (!storageClient) throw new Error('Storage client not configured');
   
   const { error: uploadError } = await storageClient.storage
     .from('media')
@@ -340,9 +337,10 @@ Only return the JSON object, no other text.`;
 // ==================== STYLE PRESETS ====================
 
 export async function createStylePreset(preset: Omit<StylePreset, 'id' | 'created_at' | 'updated_at'>): Promise<StylePreset> {
-  if (!supabase) throw new Error('Supabase not configured');
+  const dbClient = getDbClient();
+  if (!dbClient) throw new Error('Database client not configured');
 
-  const { data, error } = await supabase
+  const { data, error } = await dbClient
     .from('style_presets')
     .insert(preset)
     .select()
@@ -356,9 +354,10 @@ export async function createStylePreset(preset: Omit<StylePreset, 'id' | 'create
 }
 
 export async function getStylePresets(): Promise<StylePreset[]> {
-  if (!supabase) return [];
+  const dbClient = getDbClient();
+  if (!dbClient) return [];
 
-  const { data, error } = await supabase
+  const { data, error } = await dbClient
     .from('style_presets')
     .select('*')
     .order('created_at', { ascending: false });
@@ -372,9 +371,10 @@ export async function getStylePresets(): Promise<StylePreset[]> {
 }
 
 export async function updateStylePreset(id: string, updates: Partial<StylePreset>): Promise<void> {
-  if (!supabase) throw new Error('Supabase not configured');
+  const dbClient = getDbClient();
+  if (!dbClient) throw new Error('Database client not configured');
 
-  const { error } = await supabase
+  const { error } = await dbClient
     .from('style_presets')
     .update({ ...updates, updated_at: new Date().toISOString() })
     .eq('id', id);
@@ -385,9 +385,10 @@ export async function updateStylePreset(id: string, updates: Partial<StylePreset
 }
 
 export async function deleteStylePreset(id: string): Promise<void> {
-  if (!supabase) throw new Error('Supabase not configured');
+  const dbClient = getDbClient();
+  if (!dbClient) throw new Error('Database client not configured');
 
-  const { error } = await supabase
+  const { error } = await dbClient
     .from('style_presets')
     .delete()
     .eq('id', id);
@@ -643,8 +644,6 @@ export async function generateDualImages(
 // ==================== SAVE GENERATED IMAGE ====================
 
 export async function saveGeneratedImage(base64DataUrl: string, postId?: string): Promise<string> {
-  if (!supabase) throw new Error('Supabase not configured');
-
   const storageClient = getStorageClient();
   if (!storageClient) throw new Error('Storage client not configured');
 
