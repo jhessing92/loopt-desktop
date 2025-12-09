@@ -7,6 +7,9 @@ import { supabase, supabaseAdmin } from './supabase';
 // Get the storage client (admin bypasses RLS)
 const getStorageClient = () => supabaseAdmin || supabase;
 
+// Get the database client (admin bypasses RLS)
+const getDbClient = () => supabaseAdmin || supabase;
+
 // Initialize Gemini client
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
@@ -169,8 +172,11 @@ export async function uploadTrainingImage(
     .from('media')
     .getPublicUrl(filePath);
 
-  // Save to training_images table
-  const { data: imageData, error: dbError } = await supabase
+  // Save to training_images table (using admin client to bypass RLS)
+  const dbClient = getDbClient();
+  if (!dbClient) throw new Error('Database client not configured');
+  
+  const { data: imageData, error: dbError } = await dbClient
     .from('training_images')
     .insert({
       url: urlData.publicUrl,
@@ -191,9 +197,10 @@ export async function uploadTrainingImage(
 }
 
 export async function getTrainingImages(type?: TrainingImageType): Promise<TrainingImage[]> {
-  if (!supabase) return [];
+  const dbClient = getDbClient();
+  if (!dbClient) return [];
 
-  let query = supabase
+  let query = dbClient
     .from('training_images')
     .select('*')
     .order('created_at', { ascending: false });
@@ -213,9 +220,10 @@ export async function getTrainingImages(type?: TrainingImageType): Promise<Train
 }
 
 export async function deleteTrainingImage(id: string): Promise<void> {
-  if (!supabase) throw new Error('Supabase not configured');
+  const dbClient = getDbClient();
+  if (!dbClient) throw new Error('Database client not configured');
 
-  const { data: image } = await supabase
+  const { data: image } = await dbClient
     .from('training_images')
     .select('file_path')
     .eq('id', id)
@@ -228,7 +236,7 @@ export async function deleteTrainingImage(id: string): Promise<void> {
     }
   }
 
-  const { error } = await supabase
+  const { error } = await dbClient
     .from('training_images')
     .delete()
     .eq('id', id);
@@ -239,9 +247,10 @@ export async function deleteTrainingImage(id: string): Promise<void> {
 }
 
 export async function updateTrainingImageTags(id: string, tags: string[]): Promise<void> {
-  if (!supabase) throw new Error('Supabase not configured');
+  const dbClient = getDbClient();
+  if (!dbClient) throw new Error('Database client not configured');
 
-  const { error } = await supabase
+  const { error } = await dbClient
     .from('training_images')
     .update({ tags })
     .eq('id', id);
