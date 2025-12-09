@@ -200,6 +200,7 @@ export async function getTrainingImages(type?: TrainingImageType): Promise<Train
   const dbClient = getDbClient();
   if (!dbClient) return [];
 
+  // Fetch from training_images table
   let query = dbClient
     .from('training_images')
     .select('*')
@@ -213,10 +214,37 @@ export async function getTrainingImages(type?: TrainingImageType): Promise<Train
 
   if (error) {
     console.error('Error fetching training images:', error);
-    return [];
   }
 
-  return data || [];
+  let results: TrainingImage[] = data || [];
+
+  // For brand_graphic type, also fetch from brand_assets table
+  if (type === 'brand_graphic' || !type) {
+    const { data: brandAssets, error: brandError } = await dbClient
+      .from('brand_assets')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (brandError) {
+      console.error('Error fetching brand assets:', brandError);
+    } else if (brandAssets && brandAssets.length > 0) {
+      // Transform brand_assets to TrainingImage format
+      const transformedAssets: TrainingImage[] = brandAssets.map((asset: any) => ({
+        id: asset.id,
+        url: asset.url,
+        name: asset.name,
+        type: 'brand_graphic' as TrainingImageType,
+        tags: asset.tags || [],
+        file_path: asset.file_path,
+        created_at: asset.created_at,
+      }));
+      
+      // Merge with training images, brand assets first
+      results = [...transformedAssets, ...results];
+    }
+  }
+
+  return results;
 }
 
 export async function deleteTrainingImage(id: string): Promise<void> {
