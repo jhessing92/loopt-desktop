@@ -3,6 +3,7 @@
   import Calendar from '$lib/components/Calendar.svelte';
   import PostList from '$lib/components/PostList.svelte';
   import MediaLibrary from '$lib/components/MediaLibrary.svelte';
+  import BrandAssets from '$lib/components/BrandAssets.svelte';
   import ContentEditor from '$lib/components/ContentEditor.svelte';
   import ToastContainer from '$lib/components/ToastContainer.svelte';
 
@@ -27,9 +28,11 @@
       <PostList />
     {:else if state.view === 'media'}
       <MediaLibrary />
+    {:else if state.view === 'assets'}
+      <BrandAssets />
     {/if}
   {/if}
-</div>
+  </div>
 
 <!-- Content Editor Modal -->
 <ContentEditor />

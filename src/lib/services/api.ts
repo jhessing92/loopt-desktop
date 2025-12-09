@@ -1,6 +1,9 @@
 import axios from 'axios';
-import { supabase, type ContentItem } from './supabase';
+import { supabase, supabaseAdmin, type ContentItem } from './supabase';
 import type { ContentPost, PlatformConfig, ContentStatus } from '$lib/types';
+
+// Use admin client for write operations (bypasses RLS)
+const writeClient = supabaseAdmin || supabase;
 
 // Use environment variable or default to localhost
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7328';
@@ -102,14 +105,15 @@ function transformToContentPost(item: { row: number; row_data: string[] }, gid?:
 }
 
 export const api = {
-  // Subscribe to real-time changes
+  // Subscribe to real-time changes (using admin client for RLS bypass)
   subscribeToChanges(callback: (payload: any) => void) {
-    if (!supabase) {
+    const client = writeClient || supabase;
+    if (!client) {
       console.warn('Supabase not configured, real-time disabled');
       return null;
     }
 
-    return supabase
+    return client
       .channel('content_items_changes')
       .on(
         'postgres_changes',
@@ -131,18 +135,21 @@ export const api = {
   },
 
   async getPosts(gid: string): Promise<ContentPost[]> {
-    // First try Supabase for posts
-    if (supabase) {
+    // First try Supabase for posts (using admin client to bypass RLS)
+    if (writeClient) {
       try {
-        const { data, error } = await supabase
+        const { data, error } = await writeClient
           .from('content_items')
           .select('*')
           .order('scheduled_for', { ascending: true });
 
-        if (!error && data && data.length > 0) {
-          console.log('Loaded posts from Supabase:', data.length);
-          return data.map(supabaseToContentPost);
+        if (error) {
+          console.error('Supabase getPosts error:', error);
+          throw error;
         }
+        
+        console.log('Loaded posts from Supabase:', data?.length || 0);
+        return (data || []).map(supabaseToContentPost);
       } catch (e) {
         console.error('Supabase error, falling back to API:', e);
       }
@@ -165,10 +172,10 @@ export const api = {
   },
 
   async createPost(post: Partial<ContentPost>, gid: string): Promise<ContentPost> {
-    // Save to Supabase for persistence
-    if (supabase) {
+    // Save to Supabase for persistence (using admin client to bypass RLS)
+    if (writeClient) {
       try {
-        const { data, error } = await supabase
+        const { data, error } = await writeClient
           .from('content_items')
           .insert([{
             ...contentPostToSupabase(post),
@@ -214,10 +221,10 @@ export const api = {
   },
 
   async updatePost(post: ContentPost): Promise<void> {
-    // Update in Supabase
-    if (supabase && !post.id.startsWith('sheet-')) {
+    // Update in Supabase (using admin client to bypass RLS)
+    if (writeClient && !post.id.startsWith('sheet-')) {
       try {
-        const { error } = await supabase
+        const { error } = await writeClient
           .from('content_items')
           .update({
             ...contentPostToSupabase(post),

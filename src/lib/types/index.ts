@@ -71,7 +71,7 @@ export interface AppState {
   selectedPost: ContentPost | null;
   isEditorOpen: boolean;
   isCreating: boolean;
-  view: 'calendar' | 'list' | 'media';
+  view: 'calendar' | 'list' | 'media' | 'assets';
   filterStatus: ContentStatus | 'all';
   filterPlatform: Platform | 'all';
 }

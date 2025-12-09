@@ -3,9 +3,15 @@
   import type { ContentPost, ContentType, Platform } from '$lib/types';
   import { format } from 'date-fns';
   import MediaUploader from './MediaUploader.svelte';
+  import AIGenerationPanel from './AIGenerationPanel.svelte';
+  import BrandAssets from './BrandAssets.svelte';
+  import type { BrandAsset } from '$lib/services/brandAssets';
 
   let state = $derived($appState);
   let platform = $derived($selectedPlatform);
+  
+  // Brand assets picker state
+  let showAssetPicker = $state(false);
   
   let post = $state<Partial<ContentPost>>({
     platform: 'linkedin',
@@ -103,6 +109,32 @@
 
   function handleMediaChange(files: any[]) {
     post.media_files = files;
+  }
+
+  function handleAIImageSelect(imageUrl: string) {
+    // Add the AI-generated image to media files
+    const newMediaFile = {
+      id: `ai-${Date.now()}`,
+      name: 'AI Generated Image',
+      type: 'image' as const,
+      url: imageUrl,
+    };
+    post.media_files = [...(post.media_files || []), newMediaFile];
+  }
+
+  // State for right panel tabs
+  let rightPanelTab: 'media' | 'ai' | 'assets' = $state('media');
+  
+  // Handle brand asset selection
+  function handleAssetSelect(asset: BrandAsset) {
+    const newMediaFile = {
+      id: `brand-${asset.id}`,
+      name: asset.name,
+      type: asset.type === 'video' ? 'video' as const : 'image' as const,
+      url: asset.url,
+    };
+    post.media_files = [...(post.media_files || []), newMediaFile];
+    showAssetPicker = false;
   }
 
   function closeModal() {
@@ -236,15 +268,78 @@
             </div>
           </div>
 
-          <!-- Right Column - Media -->
+          <!-- Right Column - Media & AI -->
           <div class="space-y-6">
-            <div>
-              <span class="label">Media</span>
-              <MediaUploader 
-                files={post.media_files || []}
-                onchange={handleMediaChange}
-              />
+            <!-- Tab Switcher -->
+            <div class="flex rounded-lg bg-loopt-bg p-1">
+              <button 
+                class="flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
+                class:bg-loopt-surface={rightPanelTab === 'media'}
+                class:text-loopt-text={rightPanelTab === 'media'}
+                class:text-loopt-text-muted={rightPanelTab !== 'media'}
+                onclick={() => rightPanelTab = 'media'}
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                </svg>
+                Upload
+              </button>
+              <button 
+                class="flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
+                class:bg-loopt-surface={rightPanelTab === 'assets'}
+                class:text-loopt-text={rightPanelTab === 'assets'}
+                class:text-loopt-text-muted={rightPanelTab !== 'assets'}
+                onclick={() => rightPanelTab = 'assets'}
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                </svg>
+                Assets
+              </button>
+              <button 
+                class="flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-1.5 {rightPanelTab === 'ai' ? 'bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-purple-300' : 'text-loopt-text-muted'}"
+                onclick={() => rightPanelTab = 'ai'}
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                </svg>
+                AI
+              </button>
             </div>
+
+            <!-- Tab Content -->
+            {#if rightPanelTab === 'media'}
+              <div>
+                <span class="label">Upload Media</span>
+                <MediaUploader 
+                  files={post.media_files || []}
+                  onchange={handleMediaChange}
+                />
+              </div>
+            {:else if rightPanelTab === 'assets'}
+              <!-- Brand Assets Tab -->
+              <div>
+                <div class="flex items-center justify-between mb-3">
+                  <span class="label mb-0">Select from Brand Assets</span>
+                </div>
+                <button 
+                  onclick={() => showAssetPicker = true}
+                  class="w-full border-2 border-dashed border-loopt-border rounded-xl p-6 text-center hover:border-loopt-accent transition-colors group"
+                >
+                  <svg class="w-10 h-10 mx-auto text-loopt-text-muted group-hover:text-loopt-accent mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                  </svg>
+                  <p class="text-loopt-text-muted group-hover:text-loopt-text font-medium">Browse Brand Assets</p>
+                  <p class="text-xs text-loopt-text-muted mt-1">Click to select from your library</p>
+                </button>
+              </div>
+            {:else}
+              <!-- AI Generation Tab -->
+              <AIGenerationPanel 
+                caption={post.caption || ''}
+                onImageSelect={handleAIImageSelect}
+              />
+            {/if}
 
             <!-- Preview -->
             {#if post.caption || post.idea}
@@ -342,6 +437,32 @@
           {/if}
         </div>
       </div>
+    </div>
+  </div>
+{/if}
+
+<!-- Brand Asset Picker Modal -->
+{#if showAssetPicker}
+  <div 
+    class="fixed inset-0 bg-black/70 flex items-center justify-center z-[60] p-4"
+    onclick={() => showAssetPicker = false}
+    onkeydown={(e) => e.key === 'Escape' && (showAssetPicker = false)}
+    role="dialog"
+    aria-modal="true"
+    aria-label="Select Brand Asset"
+    tabindex="-1"
+  >
+    <div 
+      class="bg-loopt-surface rounded-2xl overflow-hidden w-full max-w-5xl h-[80vh]"
+      onclick={(e) => e.stopPropagation()}
+      onkeydown={(e) => e.stopPropagation()}
+      role="document"
+    >
+      <BrandAssets 
+        pickerMode={true}
+        onSelect={handleAssetSelect}
+        onClose={() => showAssetPicker = false}
+      />
     </div>
   </div>
 {/if}
