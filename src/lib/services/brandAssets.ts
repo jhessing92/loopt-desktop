@@ -3,6 +3,9 @@
 
 import { supabase, supabaseAdmin } from '$lib/services/supabase';
 
+// Use admin client to bypass RLS
+const dbClient = supabaseAdmin || supabase;
+
 export interface BrandAsset {
   id: string;
   name: string;
@@ -107,8 +110,8 @@ export async function uploadBrandAsset(
   // Determine asset type
   const assetType = options.type || getAssetType(file.type);
 
-  // Save to database
-  const { data: assetData, error: dbError } = await supabase
+  // Save to database using admin client
+  const { data: assetData, error: dbError } = await dbClient
     .from('brand_assets')
     .insert({
       name: options.name || file.name.replace(/\.[^/.]+$/, ''), // Remove extension
@@ -127,7 +130,7 @@ export async function uploadBrandAsset(
 
   if (dbError) {
     // Clean up uploaded file if db insert fails
-    await supabase.storage.from('media').remove([filePath]);
+    await storageClient.storage.from('media').remove([filePath]);
     throw new Error(`Failed to save asset: ${dbError.message}`);
   }
 
@@ -141,7 +144,7 @@ export async function getBrandAssets(options?: {
   tags?: string[];
   search?: string;
 }): Promise<BrandAsset[]> {
-  let query = supabase
+  let query = dbClient
     .from('brand_assets')
     .select('*')
     .order('created_at', { ascending: false });
@@ -174,7 +177,7 @@ export async function getBrandAssets(options?: {
 
 // Get unique folders
 export async function getFolders(): Promise<string[]> {
-  const { data, error } = await supabase
+  const { data, error } = await dbClient
     .from('brand_assets')
     .select('folder')
     .order('folder');
@@ -190,7 +193,7 @@ export async function getFolders(): Promise<string[]> {
 
 // Get unique tags
 export async function getTags(): Promise<string[]> {
-  const { data, error } = await supabase
+  const { data, error } = await dbClient
     .from('brand_assets')
     .select('tags');
 
@@ -208,7 +211,7 @@ export async function updateBrandAsset(
   id: string, 
   updates: Partial<Pick<BrandAsset, 'name' | 'tags' | 'folder' | 'type'>>
 ): Promise<BrandAsset> {
-  const { data, error } = await supabase
+  const { data, error } = await dbClient
     .from('brand_assets')
     .update(updates)
     .eq('id', id)
@@ -225,7 +228,7 @@ export async function updateBrandAsset(
 // Delete a brand asset
 export async function deleteBrandAsset(id: string): Promise<void> {
   // Get the asset first to get file path
-  const { data: asset } = await supabase
+  const { data: asset } = await dbClient
     .from('brand_assets')
     .select('file_path')
     .eq('id', id)
@@ -240,7 +243,7 @@ export async function deleteBrandAsset(id: string): Promise<void> {
   }
 
   // Delete from database
-  const { error } = await supabase
+  const { error } = await dbClient
     .from('brand_assets')
     .delete()
     .eq('id', id);
@@ -253,7 +256,7 @@ export async function deleteBrandAsset(id: string): Promise<void> {
 // Delete multiple brand assets
 export async function deleteBrandAssets(ids: string[]): Promise<void> {
   // Get all assets first
-  const { data: assets } = await supabase
+  const { data: assets } = await dbClient
     .from('brand_assets')
     .select('file_path')
     .in('id', ids);
@@ -268,7 +271,7 @@ export async function deleteBrandAssets(ids: string[]): Promise<void> {
   }
 
   // Delete from database
-  const { error } = await supabase
+  const { error } = await dbClient
     .from('brand_assets')
     .delete()
     .in('id', ids);
